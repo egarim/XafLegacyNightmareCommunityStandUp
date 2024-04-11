@@ -1,0 +1,49 @@
+﻿--Update LegacyDate
+
+UPDATE dbo.Orders
+SET OrderDateLegacy = CONVERT(int, CONVERT(varchar(8), OrderDate, 112))
+WHERE OrderDate IS NOT NULL;
+
+
+--Create view
+CREATE VIEW dbo.OrderView
+AS
+SELECT NEWID() AS UniqueIdentifier, OrderDate, ShipName, ShipCity
+FROM dbo.Orders;
+
+
+
+--PK business logic 
+CREATE FUNCTION dbo.CheckValuePattern (@InputValue NVARCHAR(100))
+RETURNS BIT
+AS
+BEGIN
+    DECLARE @Result BIT;
+
+    IF @InputValue LIKE '[A-Za-z][0-9]%'
+        SET @Result = 1;  -- Valid
+    ELSE
+        SET @Result = 0;  -- Invalid
+
+    RETURN @Result;
+END;
+GO
+
+CREATE TABLE dbo.ExampleTable (
+    MyColumn NVARCHAR(100) NOT NULL,
+    CONSTRAINT PK_MyColumn PRIMARY KEY (MyColumn),
+    CONSTRAINT CHK_MyColumn CHECK (dbo.CheckValuePattern(MyColumn) = 1)
+);
+GO
+
+--Compond primary key
+
+CREATE TABLE SalesKeyTable
+(
+    stor_id NVARCHAR(50) NOT NULL,
+    ord_num NVARCHAR(50) NOT NULL,
+    title_id NVARCHAR(50) NOT NULL,
+    phone_number NVARCHAR(15) NULL,
+    contact_name NVARCHAR(100) NULL,
+    CONSTRAINT PK_SalesKey PRIMARY KEY (stor_id, ord_num, title_id)
+);
